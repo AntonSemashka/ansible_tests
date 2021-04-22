@@ -1,0 +1,39 @@
+---
+- name: Install Apache and home page
+  hosts: all
+  become: yes
+
+  vars:
+    source_file: ./Web/index.html
+    destin_file: /var/www/html
+
+  tasks:
+  - name: Install Apache Centos
+    yum: name=httpd state=latest
+    when: ansible_os_family == "RedHat"
+
+  - name: Install Apache Ubuntu
+    apt: name=apache2 state=latest
+    when: ansible_os_family == "Debian"
+
+
+  - name: Copy home page
+    copy: src={{ source_file }} dest={{ destin_file }} mode=0555
+
+
+  - name: Start web server Centos
+    service: name=httpd state=started enabled=yes
+    when: ansible_os_family == "RedHat"
+
+  - name: Start web server Ubuntu
+    service: name=apache2 state=started enabled=yes
+    when: ansible_os_family == "Debian"
+
+  handlers:
+  - name: Restart Apache RedHat
+    service: name=httpd state=restarted
+    when: ansible_os_family == "RedHat"
+
+  - name: Restart Apache Debian
+    service: name=apache2 state=restarted
+    when: ansible_os_family == "Debian"  
